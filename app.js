@@ -38,7 +38,7 @@
     wikipedia: 'https://en.wikipedia.org/wiki/Speech_synthesis',
     paulgraham: 'https://paulgraham.com/greatwork.html',
     hackernews: 'https://news.ycombinator.com/',
-    company: 'https://hotragn.github.io/sitevocal/', // SiteVocal's own product homepage → a Site Briefing
+    company: 'https://hotragn.github.io/SiteVocal/', // SiteVocal's own product homepage → a Site Briefing
   };
 
   // Free public CORS proxies, tried in order after a direct fetch.
