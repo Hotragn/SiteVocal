@@ -1,0 +1,22 @@
+/* Input for vendor/styles.css: Tailwind CSS v4.3.3, compiled ahead of time so the page loads no remote code.
+ * Rebuild from the repository root after changing class names in index.html or app.js:
+ *   npm install --no-save tailwindcss@4.3.3 @tailwindcss/cli@4.3.3
+ *   npx @tailwindcss/cli -i vendor/tailwind.input.css -o vendor/styles.css
+ */
+@import "tailwindcss" source(none);
+@source "../index.html";
+@source "../app.js";
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Newsreader", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+  --color-accent: rgb(var(--sv-accent));
+  --color-accent-2: rgb(var(--sv-accent-2));
+  --color-accent-ink: rgb(var(--sv-accent-ink));
+  --color-ink: #0B0D0E;
+  --color-ink-2: #16181A;
+  --color-paper: #F8F9FA;
+  --color-engine: #047857;
+  --color-engine-bright: #00C853;
+  --color-burgundy: #7A1C24;
+}
