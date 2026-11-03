@@ -1,13 +1,15 @@
 # SiteVocal: Chrome Web Store listing kit (version 2.8.0)
 
-Everything the Chrome Web Store Developer Dashboard asks for, ready to paste. The upload package is `sitevocal-chrome-store.zip`. It holds only the files the extension runs: `manifest.json`, `background.js`, `content.js`, `context-hook.js`, `panel.html`, `panel.js`, `index.html`, `app.js`, `vendor/readability.min.js`, `vendor/styles.css`, `icons/`, `LICENSE` and `THIRD_PARTY_NOTICES.txt`.
+Everything the Chrome Web Store Developer Dashboard asks for, ready to paste. The upload package is `dist/sitevocal-chrome-store.zip` (`dist/` is not committed). It holds only the files the extension runs: `manifest.json`, `background.js`, `content.js`, `context-hook.js`, `panel.html`, `panel.js`, `index.html`, `app.js`, `vendor/readability.min.js`, `vendor/styles.css`, `vendor/fonts.css`, `vendor/fonts/`, `icons/`, `LICENSE` and `THIRD_PARTY_NOTICES.txt`.
 
-To rebuild it from a clone of the repository:
+To rebuild it from a clone of the repository (macOS, Linux, or Windows 10 and later, which ship `tar`), from the repository folder:
 
 ```sh
-zip -r -X sitevocal-chrome-store.zip manifest.json background.js content.js context-hook.js panel.html panel.js \
-  index.html app.js vendor/readability.min.js vendor/styles.css icons LICENSE THIRD_PARTY_NOTICES.txt
+mkdir dist
+tar -a -c -f dist/sitevocal-chrome-store.zip manifest.json background.js content.js context-hook.js panel.html panel.js index.html app.js vendor/readability.min.js vendor/styles.css vendor/fonts.css vendor/fonts icons LICENSE THIRD_PARTY_NOTICES.txt
 ```
+
+Bump `version` in `manifest.json` before every upload after the first: the store refuses a version it has already seen.
 
 ---
 
@@ -16,14 +18,16 @@ zip -r -X sitevocal-chrome-store.zip manifest.json background.js content.js cont
 ### Item name (from `manifest.json`)
 
 ```text
-SiteVocal — Website to Speech Reader
+SiteVocal: Read Aloud, Text to Speech & Page Summary
 ```
 
-### Summary / short description (from `manifest.json`, 126 of 132 characters)
+### Summary / short description (from `manifest.json`, 129 of 132 characters)
 
 ```text
-Hear any web page: a short summary of its key points, a 60-second site briefing, or every word ad-free. No API keys.
+Read any web page aloud, ad-free, or hear a 60-second summary first. Free text to speech, no word limit, no account, no API keys.
 ```
+
+The name (52 of 75 characters) leads with the words people search for, *read aloud* and *text to speech*. Both fields come from `manifest.json` and change only with a new upload.
 
 ### Category and language
 
@@ -90,10 +94,10 @@ Source code, documentation and issue tracker: https://github.com/Hotragn/sitevoc
 | Asset | Size | Source |
 |---|---|---|
 | Store icon (required) | 128 × 128 PNG | `icons/icon-128.png`: 96 × 96 artwork with 16 px of transparent padding, as Google's icon guide asks |
-| Screenshots (1 to 5 required) | 1280 × 800, 24-bit PNG | In [`store-assets/`](store-assets/): `screenshot-1-summarize-page.png`, `screenshot-2-site-briefing.png`, `screenshot-3-ad-free-reader.png`, `screenshot-4-side-panel.png`, `screenshot-5-privacy-turbo.png` |
+| Screenshots (1 to 5 required) | 1280 × 800, 24-bit PNG | In [`store-assets/`](store-assets/), upload in this order: `screenshot-1-ad-free-reader.png`, `screenshot-2-summarize-page.png`, `screenshot-3-site-briefing.png`, `screenshot-4-section-outline.png`, `screenshot-5-privacy.png`. Each shows the real side panel, captured with the rig in [`store-assets/shots/`](store-assets/shots/) |
 | Small promo tile (**required**) | 440 × 280 PNG | [`store-assets/promo-small-440x280.png`](store-assets/promo-small-440x280.png) |
 | Marquee promo tile (optional, needed to be featured) | 1400 × 560 PNG | [`store-assets/promo-marquee-1400x560.png`](store-assets/promo-marquee-1400x560.png) |
-| Promo video (optional) | YouTube link | Leave empty. Google's listing page names it among the assets; its image guide lists only the icon, one screenshot and the small tile as mandatory |
+| Promo video (optional) | YouTube link | Upload [`media/sitevocal-demo.mp4`](media/sitevocal-demo.mp4) to YouTube (Public or Unlisted) and paste its link. The store accepts only a YouTube URL |
 
 ### Additional fields
 
@@ -193,7 +197,7 @@ No account or key is needed. SiteVocal installs with no host permissions. Open a
 
 In the package:
 
-- [x] Manifest V3. `description` is 116 characters (the limit is 132). `version` is `2.8.0`.
+- [x] Manifest V3. `name` is 52 characters (the limit is 75) and `description` is 129 (the limit is 132). `version` is `2.8.0`.
 - [x] No host permissions at install: no `host_permissions` and no `content_scripts`. `http://*/*` and `https://*/*` are `optional_host_permissions`, requested only from a user's click, after SiteVocal's own explanation. Chrome shows no permission warning at install.
 - [x] No remote code: the CSP is `script-src 'self'` for `extension_pages` and `sandbox`, and both are covered by the extension test suite.
 - [x] No `eval`, `new Function` or string timers in any packaged script.
@@ -213,6 +217,8 @@ Outside the package (these can't be checked by any tool and block submission if 
 ## 5. Compliance check (21 October 2026, version 2.8.0)
 
 Run on the exact files of `sitevocal-chrome-store.zip`, unpacked. A clean result is not a promise of approval: the listing and the privacy policy page are reviewed too.
+
+**Since this check**, the package gained the bundled fonts (`vendor/fonts.css`, `vendor/fonts/`), the manifest's name and summary changed, and `app.js` lost one fallback (logo lookups through a public proxy in the extension). Re-run the commands below on a freshly built package before you submit.
 
 | Tool (open source) | Version | Result |
 |---|---|---|

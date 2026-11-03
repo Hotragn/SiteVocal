@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SiteVocal store screenshot frame</title>
+<!--
+  Store-screenshot rig (not shipped in the extension). A browser window with a web page on the left and the real
+  SiteVocal studio (index.html?host=extension) as its side panel on the right. The studio talks to this page over
+  the same MessageChannel protocol panel.js uses, and "tab:read" runs the real content.js on the page iframe.
+  Query: ?page=article.html&url=https://…&head=Headline&sub=Subhead
+-->
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<style>
+  :root { --bg: #0f3d2e; --bg2: #145c43; }
+  html, body { margin: 0; width: 1280px; height: 800px; overflow: hidden; }
+  body { background: radial-gradient(1200px 500px at 15% -10%, var(--bg2), var(--bg)); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  .cap { height: 150px; box-sizing: border-box; padding: 34px 56px 0; color: #fff; }
+  .cap h1 { margin: 0; font-size: 44px; line-height: 1.05; font-weight: 800; letter-spacing: -1.2px; }
+  .cap p { margin: 10px 0 0; font-size: 19px; color: rgba(255,255,255,.78); font-weight: 500; }
+  .win { position: absolute; left: 40px; right: 40px; top: 160px; bottom: -12px; background: #fff; border-radius: 14px 14px 0 0; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.45); display: flex; flex-direction: column; }
+  .bar { height: 46px; flex: none; background: #eef1f4; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid #dde2e7; }
+  .dots i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: #cfd5db; margin-right: 6px; }
+  .addr { flex: 1; height: 28px; border-radius: 14px; background: #fff; border: 1px solid #dde2e7; display: flex; align-items: center; padding: 0 14px; font: 13px system-ui, sans-serif; color: #4a5560; }
+  .addr::before { content: '🔒'; font-size: 11px; margin-right: 8px; opacity: .6; }
+  .ext { width: 28px; height: 28px; border-radius: 7px; background: #dff3ea; display: flex; align-items: center; justify-content: center; }
+  .ext img { width: 18px; height: 18px; }
+  .body { flex: 1; display: flex; min-height: 0; }
+  #page { flex: 1; border: 0; min-width: 0; }
+  .panel { width: 400px; flex: none; border-left: 1px solid #dde2e7; display: flex; flex-direction: column; background: #F8F9FA; }
+  .panel-head { height: 38px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 12px; font: 600 13px system-ui, sans-serif; color: #333; border-bottom: 1px solid #e6e9ec; background: #fff; }
+  .panel-head img { width: 16px; height: 16px; }
+  #app { flex: 1; border: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div class="cap"><h1 id="head"></h1><p id="sub"></p></div>
+<div class="win">
+  <div class="bar"><span class="dots"><i></i><i></i><i></i></span><div class="addr" id="addr"></div><span class="ext"><img src="../../icons/icon-32.png" alt=""></span></div>
+  <div class="body">
+    <iframe id="page" title="page"></iframe>
+    <div class="panel"><div class="panel-head"><img src="../../icons/icon-16.png" alt="">SiteVocal</div><iframe id="app" title="SiteVocal"></iframe></div>
+  </div>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+const FAKE_URL = q.get('url') || 'https://example.com/';
+document.getElementById('head').textContent = q.get('head') || '';
+document.getElementById('sub').textContent = q.get('sub') || '';
+document.getElementById('addr').textContent = FAKE_URL.replace(/^https:\/\//, '');
+if (q.get('bg')) document.documentElement.style.setProperty('--bg', q.get('bg'));
+if (q.get('bg2')) document.documentElement.style.setProperty('--bg2', q.get('bg2'));
+
+const page = document.getElementById('page');
+const app = document.getElementById('app');
+const mem = {};
+let port = null;
+let tabTitle = '';
+const tab = () => ({ id: 1, windowId: 1, title: tabTitle, url: FAKE_URL, favIconUrl: '', readable: true, reason: '' });
+
+page.onload = () => {
+  tabTitle = page.contentDocument.title;
+  app.src = '../../index.html?host=extension';
+};
+page.src = q.get('page') || 'article.html';
+// Silent captures: every utterance plays at volume 0 (boundary events, and so the highlight, still fire).
+app.addEventListener('load', () => {
+  const s = app.contentWindow.speechSynthesis;
+  const speak = s.speak.bind(s);
+  s.speak = (u) => { u.volume = 0; return speak(u); };
+});
+
+window.addEventListener('message', (event) => {
+  const d = event.data;
+  if (event.source !== app.contentWindow || !d || d.sv !== 1 || d.type !== 'hello' || port) return;
+  const ch = new MessageChannel();
+  port = ch.port1;
+  port.onmessage = (e) => handle(e.data);
+  app.contentWindow.postMessage({ sv: 1, type: 'connect', nonce: d.nonce }, '*', [ch.port2]);
+  port.postMessage({ sv: 1, type: 'init', surface: 'sidepanel', version: '2.8.0', storage: { ...mem }, tab: tab(), access: false });
+  setTimeout(() => port.postMessage({ sv: 1, type: 'request', request: { kind: 'tab', tabId: 1, id: 'shot-1' } }), 300);
+});
+
+async function readTab() {
+  const code = await (await fetch('../../content.js')).text();
+  const payload = page.contentWindow.eval(code);
+  payload.url = FAKE_URL;
+  return { tab: tab(), payload };
+}
+
+async function handle(m) {
+  if (!m || m.sv !== 1) return;
+  const reply = (ok, extra) => port.postMessage({ sv: 1, type: 'reply', id: m.id, ok, ...extra });
+  try {
+    switch (m.type) {
+      case 'storage:set': mem[m.key] = String(m.value); return reply(true, {});
+      case 'storage:remove': delete mem[m.key]; return reply(true, {});
+      case 'tab:read': return reply(true, { result: await readTab() });
+      case 'tab:match': return reply(true, { result: null });
+      case 'ai:availability': return reply(true, { result: { state: 'unavailable', kind: '' } });
+      case 'fetch': {
+        if (m.as !== 'dataurl') throw Object.assign(new Error('no access'), { code: 'needs-access' });
+        const blob = await (await fetch(m.url)).blob();
+        const dataUrl = await new Promise((r) => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(blob); });
+        return reply(true, { result: { url: m.url, dataUrl } });
+      }
+      default: return reply(true, { result: null });
+    }
+  } catch (err) {
+    return reply(false, { error: err.message, code: err.code || '' });
+  }
+}
+</script>
+</body>
+</html>
