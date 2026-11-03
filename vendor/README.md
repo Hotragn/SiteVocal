@@ -39,6 +39,8 @@ Check a file against its hash with `openssl dgst -sha384 -binary vendor/styles.c
 
 SiteVocal's own component styles live in the `<style>` block of `index.html`. If `styles.css` is missing, a small fallback there keeps icons at icon size and the layout readable.
 
-## Not vendored
+## Fonts
 
-The interface fonts (Plus Jakarta Sans, Newsreader and JetBrains Mono, all under the SIL Open Font License) are a stylesheet from Google Fonts, not code. If they cannot load, system fonts are used. Full licence texts for everything above are in [`THIRD_PARTY_NOTICES.txt`](../THIRD_PARTY_NOTICES.txt).
+`fonts.css` and `fonts/*.woff2` are the interface fonts (Plus Jakarta Sans, Newsreader and JetBrains Mono, all under the SIL Open Font License 1.1), unmodified as Google Fonts serves them, with every `url()` pointed at the local files. Bundling them means opening SiteVocal requests nothing from Google. To refresh them, fetch the stylesheet from `https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap` with a current Chrome user agent, download each `.woff2` it lists into `fonts/`, and rewrite the URLs.
+
+Full licence texts for everything above are in [`THIRD_PARTY_NOTICES.txt`](../THIRD_PARTY_NOTICES.txt).

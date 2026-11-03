@@ -1,6 +1,6 @@
 # SiteVocal privacy policy
 
-**Last updated:** 21 October 2026 · applies to the SiteVocal web app and the SiteVocal Chrome extension, version 2.8.0 and later.
+**Last updated:** 2 November 2026 · applies to the SiteVocal web app and the SiteVocal Chrome extension, version 2.8.0 and later.
 
 SiteVocal is a free, open-source website-to-speech reader ([source code](https://github.com/Hotragn/sitevocal)). **SiteVocal collects no data.** It has no server, no accounts, no analytics, no advertising and no tracking. The people who make SiteVocal never receive your data: no page you read, no setting and no key is ever sent to us.
 
@@ -65,7 +65,7 @@ Without access to a site, the extension can open a pasted link only through a pu
      - These services receive the address of the page you asked for, and fetch that page themselves. Like any web request, this tells them your IP address and browser. They never receive your library, your settings or any other page. Their own privacy policies apply. The status line and the error card name the routes that were tried.
      - **With your own reader key** (*Docs & Lexicon › Turbo Engine › Page reader*), the address is sent with your key to the reader you chose, at the moments described above. A Jina key is used in place of the keyless `r.jina.ai` request. TinyFish (`api.fetch.tinyfish.ai`) is used in place of the keyless reader too, and keyless `r.jina.ai` is asked only if TinyFish fails.
    - **When loading starts:** a link starts loading as soon as you paste it into an address field, when you stop typing a full address for a quarter of a second, or when you rest the pointer on a Quick Try, Up Next or Library item. That way it is ready when you press Listen. The loaded page is kept in memory only (at most 10 pages, for 5 minutes) and never written to disk until you listen to it.
-   - **Site images:** logos and the cover image are loaded from the website to show them and to match the player to the site's colour. In the extension, logos are fetched without cookies and never from your local network. When a site offers no usable logo, the web app shows the one Google's favicon service has for its domain (`www.google.com/s2/favicons`), which tells Google that domain; the extension never does, and shows a letter instead.
+   - **Site images:** logos and the cover image are loaded from the website to show them and to match the player to the site's colour. In the extension, logos are fetched without cookies, never from your local network and never through a public page service. When a site offers no usable logo, the web app shows the one Google's favicon service has for its domain (`www.google.com/s2/favicons`), which tells Google that domain; the extension never does, and shows a letter instead.
 2. **Speech voices.** SiteVocal speaks with the voices in your browser and operating system.
    - On-device voices send nothing anywhere.
    - Some voices are online voices run by your browser's maker, for example Google voices in Chrome or Microsoft "Online (Natural)" voices in Edge. With those, the browser sends each sentence to that company under its privacy policy.
@@ -77,11 +77,11 @@ Without access to a site, the extension can open a pasted link only through a pu
    - **How it is sent:** encrypted (HTTPS), without cookies and without a referrer. An OpenAI-compatible address with plain `http://` is used only for a server on your own computer or local network; any other `http://` address is saved but never used, and the form says so.
    - **What you see:** the privacy panel names the service and counts the bytes sent.
    - **Whose rules apply:** that provider's terms and privacy policy cover what it does with the text. **Clear keys** returns SiteVocal to 0 bytes sent.
-5. **Fonts.** The interface loads its fonts (Plus Jakarta Sans, Newsreader, JetBrains Mono) from Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`). Like any web font request, this tells Google your IP address and browser, but never the page you are reading. If it is blocked, system fonts are used.
+5. **Fonts.** The interface fonts (Plus Jakarta Sans, Newsreader, JetBrains Mono) ship with SiteVocal, so no font service is contacted.
 
 ## Security
 
-- Every service SiteVocal sends anything to on its own is reached over HTTPS: the page services, GitHub, Wikipedia, Hacker News, Google Fonts and the Turbo Engine services (plain `http://` only for a Turbo server on your own computer or network).
+- Every service SiteVocal sends anything to on its own is reached over HTTPS: the page services, GitHub, Wikipedia, Hacker News and the Turbo Engine services (plain `http://` only for a Turbo server on your own computer or network).
 - Keys are stored only in this browser and are sent only to the service they belong to, in the request header that service expects.
 - Pages are parsed in an inert document and only their text is shown, escaped; SiteVocal runs no code from any page or service.
 

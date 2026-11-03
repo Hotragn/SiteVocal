@@ -1313,8 +1313,9 @@
         try {
           const r = await Host.request('fetch', { url, as: 'dataurl' }, 9000);
           return r && r.dataUrl ? r.dataUrl : null;
-        } catch (err) {
-          if (!err || err.code !== 'needs-access') return null; // no access to that site: fetched the website's way
+        } catch {
+          // Never a public proxy here: a logo's address is not a link you agreed to send (Your data › page services).
+          return null;
         }
       }
       try {

@@ -158,7 +158,7 @@ Without these permissions SiteVocal still works: it reads the tab you click it o
 - Justification, if asked:
 
 ```text
-Every script is packaged with the extension: background.js, content.js, context-hook.js, panel.js, app.js and vendor/readability.min.js (Mozilla Readability 0.6.0, minified and unmodified). Extension pages and the sandboxed page run under the CSP script-src 'self'. Nothing calls eval or new Function, and no script is loaded from the network. The optional Turbo Engine and the page readers (r.jina.ai, and TinyFish with the user's key) exchange data only: text or a page address out; audio, JSON or Markdown text back. Nothing they return runs as code: Markdown becomes inert HTML in a DOMParser document and only its text is read. Styles are compiled ahead of time (vendor/styles.css), and the interface fonts come from Google Fonts as a stylesheet.
+Every script is packaged with the extension: background.js, content.js, context-hook.js, panel.js, app.js and vendor/readability.min.js (Mozilla Readability 0.6.0, minified and unmodified). Extension pages and the sandboxed page run under the CSP script-src 'self'. Nothing calls eval or new Function, and no script is loaded from the network. The optional Turbo Engine and the page readers (r.jina.ai, and TinyFish with the user's key) exchange data only: text or a page address out; audio, JSON or Markdown text back. Nothing they return runs as code: Markdown becomes inert HTML in a DOMParser document and only its text is read. Styles are compiled ahead of time (vendor/styles.css), and the interface fonts ship in the package (vendor/fonts).
 ```
 
 ### Data usage
@@ -235,7 +235,7 @@ Each policy, by the notification ID Google sends with a rejection:
 
 | ID | Policy | SiteVocal 2.8.0 |
 |---|---|---|
-| Blue Argon | Manifest V3: no remotely hosted code | Every script ships in the package; the CSP is `script-src 'self'`. Markdown and JSON from page services are data, turned into inert text. Google Fonts is a stylesheet, not code |
+| Blue Argon | Manifest V3: no remotely hosted code | Every script ships in the package; the CSP is `script-src 'self'`. Markdown and JSON from page services are data, turned into inert text. Fonts are bundled files, not code |
 | Purple Potassium | Excessive permissions | Five permissions, each used (ledger above). Host access is optional and asked for only from a click |
 | Purple Lithium | Privacy policy and disclosure | `PRIVACY.md` covers what is kept, what leaves the device and when, sharing, retention, deletion and security, with the Limited Use statement. The URL must open (see the checklist) |
 | Purple Nickel | Prominent disclosure and affirmative consent (all user data since 1 August 2026) | In the product: the loading card's question before the first link goes to a page service, *Allow all sites* explained before Chrome's prompt, Turbo keys entered by the user, **Your data** and the privacy panel. In the listing: *What happens to your data*, at the top of the description |
