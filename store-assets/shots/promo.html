@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <title>SiteVocal promo tile</title>
-<!-- Store promo images (not shipped): ?size=small → 440×280 tile, ?size=marquee → 1400×560. -->
+<!-- Store promo images (not shipped): ?size=small → 440×280 tile, ?size=marquee → 1400×560, ?size=video → 1280×720
+     end card of the demo video. -->
 <link rel="stylesheet" href="../../vendor/fonts.css">
 <style>
   html, body { margin: 0; overflow: hidden; }
@@ -22,11 +23,24 @@
   .tags { color: #86efac; font-weight: 700; }
   .small .tags { font-size: 13px; margin-top: 12px; }
   .marquee .tags { font-size: 26px; margin-top: 28px; }
+  .video { width: 1280px; height: 720px; padding: 0 120px; gap: 60px; }
+  .video img { width: 230px; height: 230px; }
+  .video h1 { font-size: 84px; letter-spacing: -2.2px; }
+  .video p { font-size: 34px; line-height: 1.25; margin-top: 20px; }
+  .video .tags { font-size: 24px; margin-top: 26px; }
+  /* Starts after the recorder has settled on the page, so the video shows the card rising in. */
+  .video img, .video > div { animation: rise .7s cubic-bezier(.2,.8,.2,1) .9s both; }
+  .video > div { animation-delay: 1.02s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 </style>
 </head>
 <body>
   <img src="../../icons/icon-512.png" alt="">
   <div><h1>SiteVocal</h1><p>Read any web page aloud — ad-free, or as a quick summary.</p><div class="tags">Free · No account · No tracking</div></div>
-<script>document.body.className = new URLSearchParams(location.search).get('size') === 'marquee' ? 'marquee' : 'small';</script>
+<script>
+  const size = new URLSearchParams(location.search).get('size');
+  document.body.className = ['marquee', 'video'].includes(size) ? size : 'small';
+  if (size === 'video') document.querySelector('.tags').textContent = 'Free on the Chrome Web Store · No account · No tracking';
+</script>
 </body>
 </html>

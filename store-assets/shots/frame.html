@@ -7,12 +7,23 @@
   Store-screenshot rig (not shipped in the extension). A browser window with a web page on the left and the real
   SiteVocal studio (index.html?host=extension) as its side panel on the right. The studio talks to this page over
   the same MessageChannel protocol panel.js uses, and "tab:read" runs the real content.js on the page iframe.
-  Query: ?page=article.html&url=https://…&head=Headline&sub=Subhead
+  Query: ?page=article.html&url=https://…&head=Headline&sub=Subhead[&h=720][&panel=0]
+  For the demo video (record-demo.mjs): panel=0 starts with the side panel closed until demo.openPanel(), a cursor
+  can be moved and clicked, captions change in place, and every utterance's start and end are logged in window.__utt.
 -->
 <link rel="stylesheet" href="../../vendor/fonts.css">
 <style>
-  :root { --bg: #0f3d2e; --bg2: #145c43; }
-  html, body { margin: 0; width: 1280px; height: 800px; overflow: hidden; }
+  :root { --bg: #0f3d2e; --bg2: #145c43; --h: 800px; }
+  html, body { margin: 0; width: 1280px; height: var(--h); overflow: hidden; }
+  .cap h1, .cap p { transition: opacity .25s; }
+  .cap.fade h1, .cap.fade p { opacity: 0; }
+  .panel { transition: width .4s cubic-bezier(.2,.8,.2,1); overflow: hidden; }
+  .panel.closed { width: 0 !important; border-left-width: 0 !important; }
+  #cursor { position: absolute; left: 0; top: 0; width: 26px; height: 26px; z-index: 10; pointer-events: none; opacity: 0; transition: transform .7s cubic-bezier(.3,.7,.2,1), opacity .2s; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+  #cursor.on { opacity: 1; }
+  #cursor i { position: absolute; left: -16px; top: -16px; width: 32px; height: 32px; border-radius: 50%; background: rgba(52,211,153,.45); transform: scale(0); opacity: 0; }
+  #cursor.tap i { animation: tap .45s ease-out; }
+  @keyframes tap { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
   body { background: radial-gradient(1200px 500px at 15% -10%, var(--bg2), var(--bg)); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
   .cap { height: 150px; box-sizing: border-box; padding: 34px 56px 0; color: #fff; }
   .cap h1 { margin: 0; font-size: 44px; line-height: 1.05; font-weight: 800; letter-spacing: -1.2px; }
@@ -41,8 +52,10 @@
     <div class="panel"><div class="panel-head"><img src="../../icons/icon-16.png" alt="">SiteVocal</div><iframe id="app" title="SiteVocal"></iframe></div>
   </div>
 </div>
+<svg id="cursor" viewBox="0 0 24 24" aria-hidden="true"><i></i><path d="M4 2l15 11-6.5 1.2 3.8 7.3-2.9 1.5-3.8-7.4L4 20z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg>
 <script>
 const q = new URLSearchParams(location.search);
+if (q.get('h')) document.documentElement.style.setProperty('--h', `${Number(q.get('h'))}px`);
 const FAKE_URL = q.get('url') || 'https://example.com/';
 document.getElementById('head').textContent = q.get('head') || '';
 document.getElementById('sub').textContent = q.get('sub') || '';
@@ -53,21 +66,80 @@ if (q.get('bg2')) document.documentElement.style.setProperty('--bg2', q.get('bg2
 const page = document.getElementById('page');
 const app = document.getElementById('app');
 const mem = {};
+// ?voice=<voice name or URI> starts the studio with that voice chosen, as if picked in its voice menu.
+if (q.get('voice')) mem.sitevocal_settings = JSON.stringify({ voiceURI: q.get('voice') });
 let port = null;
 let tabTitle = '';
 const tab = () => ({ id: 1, windowId: 1, title: tabTitle, url: FAKE_URL, favIconUrl: '', readable: true, reason: '' });
 
+const panel = document.querySelector('.panel');
+const startClosed = q.get('panel') === '0';
+if (startClosed) panel.classList.add('closed');
+const openStudio = () => { app.src = '../../index.html?host=extension'; };
 page.onload = () => {
   tabTitle = page.contentDocument.title;
-  app.src = '../../index.html?host=extension';
+  if (!startClosed) openStudio();
 };
 page.src = q.get('page') || 'article.html';
 // Silent captures: every utterance plays at volume 0 (boundary events, and so the highlight, still fire).
+// Each utterance's text, rate and start/end time (epoch ms) is logged for the demo video's narration track.
+window.__utt = [];
 app.addEventListener('load', () => {
   const s = app.contentWindow.speechSynthesis;
   const speak = s.speak.bind(s);
-  s.speak = (u) => { u.volume = 0; return speak(u); };
+  s.speak = (u) => {
+    const rec = { text: u.text, rate: u.rate, voice: u.voice ? u.voice.name : '', start: 0, end: 0 };
+    u.addEventListener('start', () => { rec.start = Date.now(); window.__utt.push(rec); });
+    const done = () => { if (!rec.end) rec.end = Date.now(); };
+    u.addEventListener('end', done);
+    u.addEventListener('error', done); // cancelled or interrupted (pause, next mode)
+    u.volume = 0;
+    return speak(u);
+  };
 });
+
+// Demo helpers, driven by record-demo.mjs.
+const cursor = document.getElementById('cursor');
+const center = (el, frameEl) => {
+  const r = el.getBoundingClientRect();
+  const o = frameEl ? frameEl.getBoundingClientRect() : { left: 0, top: 0 };
+  return [o.left + r.left + r.width / 2, o.top + r.top + r.height / 2];
+};
+window.demo = {
+  caption(head, sub) {
+    const cap = document.querySelector('.cap');
+    cap.classList.add('fade');
+    setTimeout(() => {
+      document.getElementById('head').textContent = head;
+      document.getElementById('sub').textContent = sub;
+      cap.classList.remove('fade');
+    }, 260);
+  },
+  point(x, y) {
+    cursor.classList.add('on');
+    cursor.style.transform = `translate(${x - 5}px, ${y - 3}px)`;
+  },
+  pointAt(selector) {
+    const [x, y] = center(document.querySelector(selector));
+    this.point(x, y);
+  },
+  pointInStudio(selector) {
+    const [x, y] = center(app.contentDocument.querySelector(selector), app);
+    this.point(x, y);
+  },
+  tap() {
+    cursor.classList.remove('tap');
+    void cursor.offsetWidth;
+    cursor.classList.add('tap');
+  },
+  hide() { cursor.classList.remove('on'); },
+  openPanel() {
+    panel.classList.remove('closed');
+    openStudio();
+  },
+  studio: () => app.contentDocument,
+  ready: () => Boolean(app.contentDocument && app.contentDocument.querySelector('.sv-seg')),
+};
 
 window.addEventListener('message', (event) => {
   const d = event.data;
